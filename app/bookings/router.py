@@ -1,8 +1,7 @@
 from fastapi import APIRouter
-from sqlalchemy import select
 
-from app.bookings.models import Bookings
-from app.database import async_session_maker
+from app.bookings.dao import BookingDAO
+from app.bookings.dto import SBookingsDTO
 
 router = APIRouter(
     prefix='/bookings',
@@ -11,8 +10,15 @@ router = APIRouter(
 
 
 @router.get('')
-async def get_bookings():
-    async with async_session_maker() as session:
-        query = select(Bookings.__table__.columns)
-        result = await session.execute(query)
-        return result.mappings().all()
+async def get_all() -> list[SBookingsDTO]:
+    return await BookingDAO.get_all()
+
+
+@router.get('/{booking_id}')
+async def get_one_by_id(booking_id: int) -> SBookingsDTO:
+    return await BookingDAO.get_one_by_id(booking_id)
+
+
+@router.get('/{*args}')
+async def get_one_or_none(*args) -> SBookingsDTO:
+    return await BookingDAO.get_one_or_none(*args)
