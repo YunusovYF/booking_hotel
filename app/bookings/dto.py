@@ -3,15 +3,18 @@ from datetime import date
 from pydantic import BaseModel
 
 
-class SBookingsCreateDTO(BaseModel):
+class SBookingCreateRequestDTO(BaseModel):
     room_id: int
-    user_id: int
     date_from: date
     date_to: date
-    price: int
 
 
-class SBookingsDTO(SBookingsCreateDTO):
+class SBookingCreateDTO(SBookingCreateRequestDTO):
+    user_id: int
+
+
+class SBookingDTO(SBookingCreateDTO):
     id: int
+    price: int
     total_days: int
     total_cost: int
