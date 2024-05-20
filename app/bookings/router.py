@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
+from fastapi_cache.decorator import cache
 
-from app.bookings.dao import BookingDAO
 from app.bookings.dto import SBookingDTO, SBookingCreateDTO, SBookingCreateRequestDTO
 from app.bookings.service import BookingService
 from app.users.dependencies import get_current_user
@@ -22,6 +22,7 @@ async def create(
 
 
 @router.get('')
+@cache(expire=60)
 async def get_all(current_user: SUserDTO = Depends(get_current_user)) -> list[SBookingDTO]:
     return await BookingService.get_all(user_id=current_user.id)
 
