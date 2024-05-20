@@ -12,7 +12,9 @@ class Settings(BaseSettings):
     ALGORITHM: str
 
     ACCESS_TOKEN_NAME: str
-    ACCESS_TOKEN_EXPIRE: int
+    ACCESS_TOKEN_EXPIRE: str
+
+    ORIGINS: str
 
     @property
     def DATABASE_URL(self):
