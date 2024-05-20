@@ -1,11 +1,9 @@
-from sqlalchemy import insert, select, and_, or_, func
+from sqlalchemy import select, and_, or_, func
 
-from app.bookings.dto import SBookingCreateDTO, SBookingDTO
+from app.bookings.dto import SBookingCreateDTO
 from app.bookings.models import Bookings
 from app.dao.base import BaseDAO
 from app.database import async_session_maker
-from app.exceptions import RoomNotFoundException, RoomCannotBeBookedException
-from app.hotels.rooms.dao import RoomDAO
 
 
 class BookingDAO(BaseDAO[Bookings]):
@@ -36,16 +34,3 @@ class BookingDAO(BaseDAO[Bookings]):
             qty_booked_rooms: int = qty_booked_rooms.scalar()
 
             return qty_booked_rooms
-
-    @classmethod
-    async def create(cls, booking_data: SBookingCreateDTO) -> SBookingDTO:
-        room = await RoomDAO.get_one_by_id(booking_data.room_id)
-        if not room:
-            raise RoomNotFoundException
-
-        qty_booked_rooms: int = await cls.get_qty_booked_room(booking_data)
-
-        if room.qty - qty_booked_rooms < 1:
-            raise RoomCannotBeBookedException
-
-        return await super().create(**booking_data.dict(), price=room.price)
