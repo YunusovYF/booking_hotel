@@ -18,6 +18,7 @@ from app.hotels.models import Hotels
 from app.hotels.rooms.models import Rooms
 from app.users.models import Users
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     redis = aioredis.from_url(settings.REDIS_URL)

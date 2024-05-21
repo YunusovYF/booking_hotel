@@ -4,6 +4,8 @@ from app.exceptions import RoomNotFoundException, RoomCannotBeBookedException
 from app.hotels.rooms.dao import RoomDAO
 from app.service.base import BaseService
 
+from app.tasks.tasks import send_booking_confirmation_email
+
 
 class BookingService(BaseService):
     DAO = BookingDAO
@@ -19,4 +21,8 @@ class BookingService(BaseService):
         if room.qty - qty_booked_rooms < 1:
             raise RoomCannotBeBookedException
 
-        return await cls.DAO.create(**booking_data.dict(), price=room.price)
+        booking = await cls.DAO.create(**booking_data.dict(), price=room.price)
+
+        send_booking_confirmation_email.delay(booking.id)
+
+        return booking
