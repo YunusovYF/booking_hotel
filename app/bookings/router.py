@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi_cache.decorator import cache
 
 from app.bookings.dto import SBookingDTO, SBookingCreateDTO, SBookingCreateRequestDTO
@@ -15,10 +15,11 @@ router = APIRouter(
 @router.post('')
 async def create(
         booking_data: SBookingCreateRequestDTO,
+        background_tasks: BackgroundTasks,
         current_user: SUserDTO = Depends(get_current_user)
 ) -> SBookingDTO:
     booking_data = SBookingCreateDTO(**booking_data.dict(), user_id=current_user.id)
-    return await BookingService.create(booking_data)
+    return await BookingService.create(booking_data, background_tasks)
 
 
 @router.get('')
