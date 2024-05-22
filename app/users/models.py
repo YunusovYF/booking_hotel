@@ -15,3 +15,6 @@ class Users(Base):
     password: Mapped[str]
 
     bookings: Mapped[list["Bookings"]] = relationship(back_populates="user")
+
+    def __str__(self):
+        return self.email

@@ -25,3 +25,6 @@ class Bookings(Base):
 
     user: Mapped["Users"] = relationship(back_populates="bookings")
     room: Mapped["Rooms"] = relationship(back_populates="bookings")
+
+    def __str__(self):
+        return f'Booking #{self.id}'

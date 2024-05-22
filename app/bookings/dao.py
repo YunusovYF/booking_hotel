@@ -13,18 +13,18 @@ class BookingDAO(BaseDAO[Bookings]):
     async def get_qty_booked_room(cls, booking_data: SBookingCreateDTO) -> int:
         async with async_session_maker() as session:
             get_qty_booked_rooms = (
-                select(func.count(Bookings.id))
+                select(func.count(cls.model.id))
                 .where(
                     and_(
-                        Bookings.room_id == booking_data.room_id,
+                        cls.model.room_id == booking_data.room_id,
                         or_(
                             and_(
-                                Bookings.date_from >= booking_data.date_from,
-                                Bookings.date_from <= booking_data.date_to,
+                                cls.model.date_from >= booking_data.date_from,
+                                cls.model.date_from <= booking_data.date_to,
                             ),
                             and_(
-                                Bookings.date_from <= booking_data.date_from,
-                                Bookings.date_to > booking_data.date_from,
+                                cls.model.date_from <= booking_data.date_from,
+                                cls.model.date_to > booking_data.date_from,
                             ),
                         ),
                     )
