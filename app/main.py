@@ -1,11 +1,12 @@
+import time
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from redis import asyncio as aioredis
-from sqladmin import ModelView, Admin
+from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
 
 from app.bookings.admin import BookingsAdmin
@@ -13,6 +14,7 @@ from app.bookings.router import router as bookings_router
 from app.config import settings
 from app.database import engine
 from app.images.router import router as images_router
+from app.logger import logger
 from app.pages.router import router as pages_router
 from app.users.admin import UsersAdmin
 from app.users.router import router as users_router
@@ -53,3 +55,15 @@ admin = Admin(app, engine)
 
 admin.add_view(UsersAdmin)
 admin.add_view(BookingsAdmin)
+
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+
+    logger.info("Request handling time", extra={
+        "process_time": round(process_time, 4)
+    })
+    return response
