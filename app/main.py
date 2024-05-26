@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_versioning import VersionedFastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from redis import asyncio as aioredis
 from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
@@ -16,10 +17,10 @@ from app.bookings.router import router as bookings_router
 from app.config import settings
 from app.database import engine
 from app.images.router import router as images_router
-from app.logger import logger
 from app.pages.router import router as pages_router
 from app.users.admin import UsersAdmin
 from app.users.router import router as users_router
+from app.prometheus.router import router as prometheus_router
 
 from app.bookings.models import Bookings
 from app.hotels.models import Hotels
@@ -41,6 +42,7 @@ app.include_router(users_router)
 app.include_router(bookings_router)
 app.include_router(pages_router)
 app.include_router(images_router)
+app.include_router(prometheus_router)
 
 origins = settings.ORIGINS.split(";")
 
@@ -66,6 +68,14 @@ app = VersionedFastAPI(app,
                        lifespan=lifespan,
                        )
 
+
+instrumentator = Instrumentator(
+    should_group_status_codes=False,
+    excluded_handlers=[".*admin.*", "/metrics"],
+)
+instrumentator.instrument(app).expose(app)
+
+
 app.mount('/static', StaticFiles(directory='app/static'), 'static')
 
 admin = Admin(app, engine)
@@ -79,7 +89,7 @@ async def add_process_time_header(request: Request, call_next):
     response = await call_next(request)
     process_time = time.time() - start_time
 
-    logger.info("Request handling time", extra={
-        "process_time": round(process_time, 4)
-    })
+    # logger.info("Request handling time", extra={
+    #     "process_time": round(process_time, 4)
+    # })
     return response

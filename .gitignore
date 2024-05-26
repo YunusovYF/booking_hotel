@@ -1,4 +1,8 @@
-/venv/
-/.idea/
-/booking_hotel.iml
-/.env
+venv
+.env
+.env-prod
+.env-render
+__pycache__
+# *.ipynb*
+.idea
+.vscode
