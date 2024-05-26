@@ -8,7 +8,7 @@ from app.users.dto import SUserDTO
 
 router = APIRouter(
     prefix='/bookings',
-    tags=['bookings']
+    tags=['bookings'],
 )
 
 

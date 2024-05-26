@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+from fastapi_versioning import VersionedFastAPI
 from redis import asyncio as aioredis
 from sqladmin import Admin
 from starlette.middleware.cors import CORSMiddleware
@@ -25,20 +26,21 @@ from app.hotels.models import Hotels
 from app.hotels.rooms.models import Rooms
 from app.users.models import Users
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    redis = aioredis.from_url(settings.REDIS_URL)
-    FastAPICache.init(RedisBackend(redis), prefix="cache")
-    yield
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="Бронирование Отелей",
+    version="0.1.0",
+    root_path="/api",
+)
 
 sentry_sdk.init(
     dsn=settings.SENTRY_DSN,
     traces_sample_rate=1.0
 )
 
+app.include_router(users_router)
+app.include_router(bookings_router)
+app.include_router(pages_router)
+app.include_router(images_router)
 
 origins = settings.ORIGINS.split(";")
 
@@ -51,15 +53,22 @@ app.add_middleware(
                    'Access-Control-Allow-Origin', 'Authorization'],
 )
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    redis = aioredis.from_url(settings.REDIS_URL)
+    FastAPICache.init(RedisBackend(redis), prefix="cache")
+    yield
+
+app = VersionedFastAPI(app,
+                       version_format='{major}',
+                       prefix_format='/api/v{major}',
+                       lifespan=lifespan,
+                       )
+
 app.mount('/static', StaticFiles(directory='app/static'), 'static')
 
-app.include_router(users_router)
-app.include_router(bookings_router)
-app.include_router(pages_router)
-app.include_router(images_router)
-
 admin = Admin(app, engine)
-
 admin.add_view(UsersAdmin)
 admin.add_view(BookingsAdmin)
 
