@@ -6,3 +6,4 @@ __pycache__
 # *.ipynb*
 .idea
 .vscode
+/booking_hotel.iml
